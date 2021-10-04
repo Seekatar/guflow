@@ -11,13 +11,11 @@ namespace Guflow.IntegrationTests
 {
     public  class TestDomain
     {
-        private const string DomainName = "GuflowTestDomain";
         private readonly Domain _domain;
         public TestDomain()
         {
             var configuration = Configuration.Build();
-            //_domain = new Domain(DomainName, RegionEndpoint.EUWest2);
-            _domain = new Domain(DomainName, new AmazonSimpleWorkflowClient(new BasicAWSCredentials(configuration["AWSAccessKey"], configuration["AWSSecretKey"]), RegionEndpoint.EUWest2));
+            _domain = new Domain(configuration["AWSSWFDomain"], new AmazonSimpleWorkflowClient(new BasicAWSCredentials(configuration["AWSAccessKey"], configuration["AWSSecretKey"]), RegionEndpoint.GetBySystemName(configuration["AWSRegion"])));
         }
 
         public async Task<WorkflowHost> Host(params Workflow[] workflows)

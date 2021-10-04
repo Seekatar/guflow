@@ -1,10 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net46</TargetFrameworks>
+    <TargetFrameworks></TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AWSSDK.SimpleWorkflow" Version="3.3.101.157" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.16.1">
@@ -16,24 +19,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Guflow\Guflow.csproj" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <Reference Include="System.Configuration" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
-    <PackageReference Include="Microsoft.Extensions.Configuration">
-      <Version>2.1.1</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder">
-      <Version>2.1.1</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json">
-      <Version>2.1.1</Version>
-    </PackageReference>
-  </ItemGroup>
   <ItemGroup>
+    <None Update="appSettings-secrets.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="appSettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

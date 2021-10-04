@@ -15,6 +15,16 @@ namespace Guflow.IntegrationTests
         private TestDomain _domain;
         private static string _taskListName;
         private Configuration _configuration;
+        public bool HasLambda
+        {
+            get
+            {
+                var ret = !string.IsNullOrEmpty(_configuration["LambdaRole"]);
+                Warn.If(!ret, "No lambda configured.");
+                return ret;
+            }
+        }
+
         [SetUp]
         public void Setup()
         {
@@ -40,11 +50,14 @@ namespace Guflow.IntegrationTests
             workflow.Closed += (s, e) => @event.Set();
             workflow.Completed += (s, e) => result = e.Result;
             _workflowHost = await HostAsync(workflow);
-            
-            await _domain.StartWorkflow<ScheduleLambdaWorkflow>(new {Id=10, Age=20}, _taskListName, _configuration["LambdaRole"]);
-            @event.WaitOne();
 
-            Assert.That(result, Is.EqualTo("\"hotelbooked-10-20\""));
+            if (HasLambda)
+            {
+                await _domain.StartWorkflow<ScheduleLambdaWorkflow>(new { Id = 10, Age = 20 }, _taskListName, _configuration["LambdaRole"]);
+                @event.WaitOne();
+                Assert.That(result, Is.EqualTo("\"hotelbooked-10-20\""));
+            }
+
         }
 
         private async Task<WorkflowHost> HostAsync(params Workflow[] workflows)

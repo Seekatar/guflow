@@ -15,6 +15,16 @@ namespace Guflow.IntegrationTests
         private static string _taskListName;
         private Configuration _configuration;
 
+        public bool HasLambda
+        {
+            get
+            {
+                var ret = !string.IsNullOrEmpty(_configuration["LambdaRole"]);
+                Warn.If(!ret, "No lambda configured.");
+                return ret;
+            }
+        }
+
         [SetUp]
         public void Setup()
         {
@@ -39,14 +49,17 @@ namespace Guflow.IntegrationTests
             workflow.Completed += (s, e) => { result = e.Result; @event.Set(); };
             _workflowHost = await HostAsync(workflow);
 
-            var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflow>("input", _taskListName, _configuration["LambdaRole"]);
-            @event.WaitOne();
+            if (HasLambda)
+            {
+                var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflow>("input", _taskListName, _configuration["LambdaRole"]);
+                @event.WaitOne();
 
-            await _domain.SendSignal(workflowId, "HRApproved", "");
-            await _domain.SendSignal(workflowId, "ManagerApproved", "");
-            @event.WaitOne();
+                await _domain.SendSignal(workflowId, "HRApproved", "");
+                await _domain.SendSignal(workflowId, "ManagerApproved", "");
+                @event.WaitOne();
 
-            Assert.That(result, Is.EqualTo("\"AccountDone\""));
+                Assert.That(result, Is.EqualTo("\"AccountDone\""));
+            }
         }
 
         [Test]
@@ -58,14 +71,17 @@ namespace Guflow.IntegrationTests
             workflow.Completed += (s, e) => { result = e.Result; @event.Set(); };
             _workflowHost = await HostAsync(workflow);
 
-            var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflowWithTimeout>("input", _taskListName, _configuration["LambdaRole"]);
-            @event.WaitOne();
+            if (HasLambda)
+            {
+                var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflowWithTimeout>("input", _taskListName, _configuration["LambdaRole"]);
+                @event.WaitOne();
 
-            await _domain.SendSignal(workflowId, "HRApproved", "");
-            await _domain.SendSignal(workflowId, "ManagerApproved", "");
-            @event.WaitOne();
+                await _domain.SendSignal(workflowId, "HRApproved", "");
+                await _domain.SendSignal(workflowId, "ManagerApproved", "");
+                @event.WaitOne();
 
-            Assert.That(result, Is.EqualTo("\"AccountDone\""));
+                Assert.That(result, Is.EqualTo("\"AccountDone\""));
+            }
         }
 
         [Test]
@@ -78,13 +94,17 @@ namespace Guflow.IntegrationTests
             workflow.Failed += (s, e) => { result = e.Reason; @event.Set(); };
             _workflowHost = await HostAsync(workflow);
 
-            var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflowWithTimeout>("input", _taskListName, _configuration["LambdaRole"]);
-            @event.WaitOne();
-            await _domain.SendSignal(workflowId, "HRApproved", "");
-            
-            @event.WaitOne(timeout.Add(TimeSpan.FromSeconds(2)));
+            if (HasLambda)
+            {
 
-            Assert.That(result, Is.EqualTo("Signal_timedout"));
+                var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflowWithTimeout>("input", _taskListName, _configuration["LambdaRole"]);
+                @event.WaitOne();
+                await _domain.SendSignal(workflowId, "HRApproved", "");
+
+                @event.WaitOne(timeout.Add(TimeSpan.FromSeconds(2)));
+
+                Assert.That(result, Is.EqualTo("Signal_timedout"));
+            }
         }
 
 

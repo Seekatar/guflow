@@ -15,6 +15,15 @@ namespace Guflow.IntegrationTests
         private TestDomain _domain;
         private static string _taskListName;
         private Configuration _configuration;
+        public bool HasLambda
+        {
+            get
+            {
+                var ret = !string.IsNullOrEmpty(_configuration["LambdaRole"]);
+                Warn.If(!ret, "No lambda configured.");
+                return ret;
+            }
+        }
 
         [SetUp]
         public void Setup()
@@ -40,13 +49,16 @@ namespace Guflow.IntegrationTests
             workflow.Completed += (s, e) => { result = e.Result; @event.Set(); };
             _workflowHost = await HostAsync(workflow);
 
-            var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflow>("input", _taskListName, _configuration["LambdaRole"]);
-            @event.WaitOne();
+            if (HasLambda)
+            {
+                var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflow>("input", _taskListName, _configuration["LambdaRole"]);
+                @event.WaitOne();
 
-            await _domain.SendSignal(workflowId, "Approved", "");
-            @event.WaitOne();
+                await _domain.SendSignal(workflowId, "Approved", "");
+                @event.WaitOne();
 
-            Assert.That(result, Is.EqualTo("\"AccountDone\""));
+                Assert.That(result, Is.EqualTo("\"AccountDone\""));
+            }
         }
 
         [Test]
@@ -58,13 +70,16 @@ namespace Guflow.IntegrationTests
             workflow.Completed += (s, e) => { result = e.Result; @event.Set(); };
             _workflowHost = await HostAsync(workflow);
 
-            var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflow>("input", _taskListName, _configuration["LambdaRole"]);
-            @event.WaitOne();
+            if (HasLambda)
+            {
+                var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflow>("input", _taskListName, _configuration["LambdaRole"]);
+                @event.WaitOne();
 
-            await _domain.SendSignal(workflowId, "Rejected", "");
-            @event.WaitOne();
+                await _domain.SendSignal(workflowId, "Rejected", "");
+                @event.WaitOne();
 
-            Assert.That(result, Is.EqualTo("\"EmpAction\""));
+                Assert.That(result, Is.EqualTo("\"EmpAction\""));
+            }
         }
 
 
@@ -77,13 +92,16 @@ namespace Guflow.IntegrationTests
             workflow.Completed += (s, e) => { result = e.Result; @event.Set(); };
             _workflowHost = await HostAsync(workflow);
 
-            var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflowWithTimeout>("input", _taskListName, _configuration["LambdaRole"]);
-            @event.WaitOne();
+            if (HasLambda)
+            {
+                var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflowWithTimeout>("input", _taskListName, _configuration["LambdaRole"]);
+                @event.WaitOne();
 
-            await _domain.SendSignal(workflowId, "Approved", "");
-            @event.WaitOne();
+                await _domain.SendSignal(workflowId, "Approved", "");
+                @event.WaitOne();
 
-            Assert.That(result, Is.EqualTo("\"AccountDone\""));
+                Assert.That(result, Is.EqualTo("\"AccountDone\""));
+            }
         }
 
         [Test]
@@ -96,12 +114,15 @@ namespace Guflow.IntegrationTests
             workflow.Failed += (s, e) => { result = e.Reason; @event.Set(); };
             _workflowHost = await HostAsync(workflow);
 
-            var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflowWithTimeout>("input", _taskListName, _configuration["LambdaRole"]);
-            @event.WaitOne();
+            if (HasLambda)
+            {
+                var workflowId = await _domain.StartWorkflow<ExpenseAnySignalWorkflowWithTimeout>("input", _taskListName, _configuration["LambdaRole"]);
+                @event.WaitOne();
 
-            @event.WaitOne(timeout.Add(TimeSpan.FromSeconds(3)));
+                @event.WaitOne(timeout.Add(TimeSpan.FromSeconds(3)));
 
-            Assert.That(result, Is.EqualTo("Signal_timedout"));
+                Assert.That(result, Is.EqualTo("Signal_timedout"));
+            }
         }
 
 
