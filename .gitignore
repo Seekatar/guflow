@@ -233,3 +233,4 @@ _Pvt_Extensions
 .fake/
 _site
 **/appSettings-secrets.json
+.vscode/settings.json

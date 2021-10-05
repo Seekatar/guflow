@@ -1,4 +1,7 @@
-$$checkoutPath = (Get-Item Env:APPVEYOR_BUILD_FOLDER).Value
+param( 
+    [string] $checkoutPath = $Env:APPVEYOR_BUILD_FOLDER,
+    [string] $version = $Env:APPVEYOR_BUILD_VERSION
+)
 
 $nuspecFilePath = Join-Path $checkoutPath -ChildPath "Guflow\Guflow.nuspec"
 $packageFilePath = Join-Path $checkoutPath -ChildPath "Guflow\packages.config"
@@ -8,10 +11,10 @@ $packageContent = [xml](Get-Content $packageFilePath)
 
 $nuspecNamespace = $nuspecContent.package.xmlns
 #update version
-$nuspecContent.package.metadata.version = (Get-Item Env:APPVEYOR_BUILD_VERSION).Value
+$nuspecContent.package.metadata.version = $version
 
 #update copyright
-$nuspecContent.package.metadata.copyright = "Copyright "+[char]0x00A9 + " "+(Get-Date).year + " - Gurmit Teotia"
+$nuspecContent.package.metadata.copyright = "Copyright $([char]0x00A9) $((Get-Date).year) - Gurmit Teotia"
 
 #Update dependency in nuspec file
 foreach($package in $packageContent.packages.package)
